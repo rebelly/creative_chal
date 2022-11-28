@@ -23,15 +23,19 @@ class Program
     }
     static void read(long bas, int pos)
     {
-        int res = 0;
-        bas >>= (int)Math.Pow(2, pos); // делаем нужный нам разряд ведущим 
-        bas &= 1111; // оставляем только его
-        for(int i = 0; i < 4; i++)
-        {
-            if ((bas & 1) != 0) res += (int)Math.Pow(2, i); //собираем из двоичного в десятичное
-            bas >>= 1; 
-        }
-        Console.WriteLine(res);// выводим 
+        if (pos == 1) bas >>= 0;
+        else bas >>= (int)Math.Pow(2, pos); // делаем нужный нам разряд ведущим
+
+        int res = 0; 
+            bas &= 1111; // оставляем только его
+            beauty_print(bas);
+            for (int i = 0; i < 4; i++)
+            {
+                if ((bas & 1) != 0) res += (int)Math.Pow(2, i); //собираем из двоичного в десятичное
+                bas >>= 1;
+            }
+            Console.WriteLine(res);
+        // выводим 
     } 
     static void add_n(ref long bas, int to_add)
     {
@@ -56,7 +60,7 @@ class Program
         long bas = 0x0000000000000000;
        add_n(ref bas, 4);
        add_n(ref bas, 5);
-       add_n(ref bas, 5);
-       read(bas, 2);
+       add_n(ref bas, 3);
+       read(bas, 3);
     }
 }
