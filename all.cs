@@ -13,7 +13,7 @@ class Program
             for (int j = 0; j < 4; j++)
             {
                 if ((bas & 1) == 0) { k++; }
-                bas >>= 1;
+                bas >>= 1; // для каждой четверки подсчитываем количество ноликов, если оно равно четырем => ячейка свободна , значит она нам нужна
             }
 
             if (k == 4)
@@ -21,13 +21,13 @@ class Program
                 break;
             }
             else {
-                o++;
+                o++; // а если нет то мы просто 
             }
         
     }
         if (o == 16)
         {
-            Console.WriteLine("К сожалению все ячейки диапазона заняты");
+            Console.WriteLine("К сожалению, все ячейки диапазона заняты"); // если самая последняя четверка и то заполнена, то у нас переполнения 
             return -1;
         }
         return o;
@@ -38,10 +38,10 @@ class Program
     {
         pos++;
         beauty_print(bas, pos);
-        if (pos != 1) bas >>= 4 * pos;// делаем нужный нам разряд ведущим
+        if (pos != 1) bas >>= 4 * pos; // делаем нужную нам четверку ведущей
         
         int res = 0;
-        bas &= 0xF;// оставляем только его 
+        bas &= 0xF;// оставляем только ее
         for (int i = 0; i < 4; i++)
             {
             
@@ -55,12 +55,10 @@ class Program
     {
         if (fnd_free(bas) != -1)
         {
-            Console.WriteLine(fnd_free(bas));
-            if (fnd_free(bas) != 0) to_add <<= 4 * fnd_free(bas); // делаем то что задумывали в 22ой строчке
-            bas += to_add;
-            //все коды предшествующих четверок не затрагиваются, потому что если к 0000_0101 прибавить 1111_0000, станет 1111_0101, и никак иначе
-            Console.WriteLine();
-            beauty_print(bas, fnd_free(bas));
+            int prev = fnd_free(bas)+1; // запоминаем ту позицию с которой работаем, чтобы красиво вывести
+            to_add <<= 4 * fnd_free(bas); // сдвигаем число которое нужно сделать чтобы оно наложилось поверх всех до этого (число 1100 становится 1100_0000 при свободной второй ячейцки)
+            bas += to_add; //все коды предшествующих четверок не затрагиваются, потому что если к 0000_0101 прибавить 1111_0000, станет 1111_0101, и никак иначе
+            beauty_print(bas, prev);
         }
 
     }
@@ -70,17 +68,16 @@ class Program
         mask <<= (pos *4); // сдвигаем ее чтобы единички оказались над нужной нам четверкой
         mask = ~mask; // делаем инверсию, теперь всё в маске единички кроме тех которые над нужной четверкой
         bas &= mask;// сбрасываем нашу четверку
-        beauty_print(bas, pos);
+        beauty_print(bas, pos+1); // красивый вывод
     }
     static void beauty_print(long bas, int pos) // это функция для красивого вывода
     {
         long mask = 0x800000000000;
-        byte o = 0;
-        Console.WriteLine(pos);
+        byte o = 0; 
         int k = 0;
         while (mask > 0)
         {
-            if (k == 12-pos)
+            if (k == 12-pos) // это если четверка равна той которую нужно выделить
             {
                 Console.ForegroundColor = ConsoleColor.Red;
             }
@@ -88,14 +85,14 @@ class Program
             {
                 Console.ForegroundColor = ConsoleColor.White;
             }
-            if ((bas & mask) != 0) Console.Write(1);
+            if ((bas & mask) != 0) Console.Write(1); 
             else Console.Write(0);
             o++;
             if (o == 4)
             {
                 k++;
                 o = 0;
-                Console.Write(" ");
+                Console.Write(" "); // это мы накручиываем четверки во первых для действий в 81 строке, во вторых для того чтобы выводить все четверки через пробелы 
             }
             
             mask >>= 1;
