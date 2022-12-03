@@ -5,59 +5,55 @@ class Program
     static int fnd_free(long bas)
     {
         
-        int o = 0;
-        int k = 0;
+        int quad = 0;
+        int counter = 0;
+        long mask = 0x1;
         for (int i = 0; i < 16; i++ )
         {
-            k = 0;
+            counter = 0;
             for (int j = 0; j < 4; j++)
             {
-                if ((bas & 1) == 0) { k++; }
-                bas >>= 1; // для каждой четверки подсчитываем количество ноликов, если оно равно четырем => ячейка свободна , значит она нам нужна
+                if ((bas & mask) == 0) counter++;  // для каждой четверки подсчитываем количество ноликов, 
+                mask <<= 1; 
             }
 
-            if (k == 4)
-            {
-                break;
-            }
-            else {
-                o++; // а если нет то мы считаем четверку занятой,
-            }
+            if (counter == 4) break; // если оно равно четырем => ячейка свободна, значит она нам нужна
+            else quad++; // а если нет то мы считаем четверку занятой
         
     }
-        if (o == 16)
+        if (quad == 15)
         {
-            Console.WriteLine("К сожалению, все ячейки диапазона заняты"); // если самая последняя четверка и та заполнена, то у нас переполнение
+            Console.WriteLine();
+            Console.WriteLine("К сожалению, все ячейки диапазона заняты");
+            Console.WriteLine(); // если самая последняя четверка и та заполнена, то у нас переполнение
             return -1;
         }
-        return o;
+        return quad;
         
     }
 
     static void read(long bas, int pos)
     {
         beauty_print(bas, pos + 1);
-        bas >>= 4 * pos; // делаем нужную нам четверку ведущей
-        int c = 1;
+        long to_read = (bas >> (4 * pos)) & 0xF; ; // делаем нужную нам четверку ведущей и оставляем только ее
+        int rate = 1;
         int res = 0;
-        bas &= 0xF;// оставляем только ее
         for (int i = 0; i < 4; i++)
             {
-                
-                if ((bas & 1) != 0) res += c << i; //собираем из двоичного в десятичное
-                bas >>= 1;
+            if ((to_read & 1) != 0) res += rate << i; //собираем из двоичного в десятичное
+            to_read >>= 1;
             }
-        Console.WriteLine(res);
-        // выводим 
+        Console.WriteLine(res);   // выводим  
+
     } 
-    static void add_n(ref long bas, int to_add)
+    static void add_n(ref long bas, long to_add)
     {
         if (fnd_free(bas) != -1)
         {
-            int prev = fnd_free(bas)+1; // запоминаем ту позицию с которой работаем, чтобы красиво вывести
+            int prev_pos = fnd_free(bas)+1; // запоминаем ту позицию с которой работаем, чтобы красиво вывести
             to_add <<= 4 * fnd_free(bas); // сдвигаем число которое нужно сделать чтобы оно наложилось поверх всех до этого (число 1100 становится 1100_0000 при свободной второй ячейцки)
             bas += to_add; //все коды предшествующих четверок не затрагиваются, потому что если к 0000_0101 прибавить 1111_0000, станет 1111_0101, и никак иначе
-            beauty_print(bas, prev);
+            beauty_print(bas, prev_pos);
         }
 
     }
@@ -71,26 +67,20 @@ class Program
     }
     static void beauty_print(long bas, int pos) // это функция для красивого вывода
     {
-        long mask = 0x800000000000;
-        byte o = 0; 
-        int k = 0;
+        long mask = 0x0800000000000000;
+        byte counter = 0; 
+        int quad = 0;
         while (mask > 0)
         {
-            if (k == 12-pos) // это если четверка равна той которую нужно выделить
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.White;
-            }
+            if (quad == 15-pos) Console.ForegroundColor = ConsoleColor.Red; // это если четверка равна той которую нужно выделить
+            else Console.ForegroundColor = ConsoleColor.White;
             if ((bas & mask) != 0) Console.Write(1); 
             else Console.Write(0);
-            o++;
-            if (o == 4)
+            counter++;
+            if (counter == 4)
             {
-                k++;
-                o = 0;
+                quad++;
+                counter = 0;
                 Console.Write(" "); // это мы накручиываем четверки во первых для действий в 81 строке, во вторых для того чтобы выводить все четверки через пробелы 
             }
             
@@ -102,43 +92,51 @@ class Program
     public static void Main()
     {
 
-        long bas = 0x00000000000000000000000000000000; 
+        long bas = 0x00000000000000000000000000000000;
         string req = " ";
         while (req != "")
         {
-            Console.WriteLine("Введите одну из команд, далее , на следующей строке - требуемое число:");
-            Console.WriteLine("Ввести <число от 0 до 15> - добавляет число на первое свободное место");
-            Console.WriteLine("Удалить <число от 0 до 16> - стирает число из заданной позиции: ");
-            Console.WriteLine("Прочитать <число от 0 до 16> - вывести число с заданной позиции: ");
+            Console.WriteLine("0. Введите одну из команд, далее , на следующей строке - требуемое число:");
+            Console.WriteLine("1. Ввести <число от 0 до 15> - добавляет число на первое свободное место");
+            Console.WriteLine("2. Удалить <число от 0 до 16> - стирает число из заданной позиции: ");
+            Console.WriteLine("3. Прочитать <число от 0 до 16> - вывести число с заданной позиции: ");
+            Console.WriteLine();
+            Console.WriteLine("Чтобы завершить работу с программой введите пустой запрос.");
             req = Console.ReadLine();
             switch (req) {
                 case "Ввести":
                     Console.Write("Введите число, которое нужно добавить: ");
-                    int addit = int.Parse(Console.ReadLine());
+                    long addit = int.Parse(Console.ReadLine());
+                    Console.WriteLine();
                     if (addit >= 0 && addit <= 15) add_n(ref bas, addit);
                     else Console.WriteLine("Извините, данная операция невозможна, нужно ввести число от 0 включительно до 15 включительно");
+                    Console.WriteLine();
                     break;
 
                 case "Удалить":
                     Console.Write("Введите индекс числа, которое нужно удалить: ");
-                    int delet = int.Parse(Console.ReadLine());
-                    if (delet >= 0 && delet <= 15) del(ref bas, delet);
+                    int deletit = int.Parse(Console.ReadLine());
+                    Console.WriteLine();
+                    if (deletit >= 0 && deletit <= 15) del(ref bas, deletit);
                     else Console.WriteLine("Извините, данная операция невозможна, индекс находится в диапазоне от 0 включительно до 15 включительно");
+                    Console.WriteLine();
                     break;
             
                 case "Прочитать":
                     Console.Write("Введите индекс числа, которое нужно прочитать: ");
                     int read_n = int.Parse(Console.ReadLine());
+                    Console.WriteLine();
                     if (read_n >= 0 && read_n <= 15) read(bas, read_n);
+                    
                     else Console.WriteLine("Извините, данная операция невозможна, индекс находится в диапазоне от 0 включительно до 15 включительно");
+                    Console.WriteLine();
                     break;
                 default:
+                    Console.WriteLine();
                     Console.WriteLine("Неизвестная команда");
+                    Console.WriteLine();
                     break;
-            
             }
         }
-
-
     }
 }
